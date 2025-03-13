@@ -49,6 +49,7 @@
 
 						<div class="mb-3">
 							<label class="form-label">Input book title:</label>
+							<div style="color:red" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
 							<input class="form-control" type="text" th:field="*{title}">
 						</div>
 
@@ -59,9 +60,12 @@
 							</select>
 						</div>
 
-						<div class="mb-3" th:each="g: ${genres}">
-							<label th:text = "${g.getName()}"></label>
-							<input type="checkbox" th:value="${g.getId()}" th:field="*{genreIds}"/>
+						<div th:with="gens=${genres}">
+							<div style="color:red" th:if="${#fields.hasErrors('genreIds')}" th:errors="*{genreIds}"></div>
+							<div class="mb-3" th:each="g: ${gens}">
+								<label th:text = "${g.getName()}"></label>
+								<input type="checkbox" th:value="${g.getId()}" th:field="*{genreIds}"/>
+							</div>
 						</div>
 
 						<div>

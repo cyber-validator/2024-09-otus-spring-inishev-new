@@ -1,8 +1,10 @@
 package ru.otus.hw.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,14 +49,21 @@ public class BookController {
     @GetMapping("/edit/{book_id}")
     public String editBook(@PathVariable long book_id, Model model) {
         Book b = bookService.findById(book_id).orElse(new Book());
-        model.addAttribute("book", new CreateOrEditBookDto(b));
+        CreateOrEditBookDto dto = b.getId() == 0 ? new CreateOrEditBookDto() : new CreateOrEditBookDto(b);
+        model.addAttribute("book", dto);
         model.addAttribute("authors", authorService.findAll());
         model.addAttribute("genres", genreService.findAll());
         return "save";
     }
 
     @PostMapping("/save")
-    public String saveBook(@ModelAttribute("book") CreateOrEditBookDto book) {
+    public String saveBook(@Valid @ModelAttribute("book") CreateOrEditBookDto book,
+                           BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("authors", authorService.findAll());
+            model.addAttribute("genres", genreService.findAll());
+            return "save";
+        }
         bookService.update(book.getId(), book.getTitle(), book.getAuthorId(), Set.copyOf(book.getGenreIds()));
         return "redirect:/";
     }

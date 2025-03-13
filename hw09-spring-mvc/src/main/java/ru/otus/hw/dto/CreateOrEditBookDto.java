@@ -1,5 +1,7 @@
 package ru.otus.hw.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
 
@@ -8,8 +10,10 @@ import java.util.List;
 
 public class CreateOrEditBookDto {
     private long id;
+    @NotBlank(message = "The title can't be empty")
     private String title;
     private long authorId;
+    @NotEmpty(message = "Need to select at least one genre")
     private List<Long> genreIds;
 
     public CreateOrEditBookDto() {
@@ -19,7 +23,6 @@ public class CreateOrEditBookDto {
         this.id = b.getId();
         this.title = b.getTitle();
         this.authorId = b.getAuthor().getId();
-//        this.authorId = String.valueOf(b.getAuthor().getId());
         this.genreIds = new ArrayList<>();
         for (Genre g : b.getGenres()) {
             this.genreIds.add(g.getId());
