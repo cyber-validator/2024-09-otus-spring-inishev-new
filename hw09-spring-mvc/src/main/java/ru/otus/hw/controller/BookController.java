@@ -25,7 +25,9 @@ import java.util.stream.Collectors;
 public class BookController {
 
     private final BookService bookService;
+
     private final AuthorService authorService;
+
     private final GenreService genreService;
 
     @GetMapping("/")
@@ -47,8 +49,8 @@ public class BookController {
     }
 
     @GetMapping("/edit/{book_id}")
-    public String editBook(@PathVariable long book_id, Model model) {
-        Book b = bookService.findById(book_id).orElse(new Book());
+    public String editBook(@PathVariable(name = "book_id") long bookId, Model model) {
+        Book b = bookService.findById(bookId).orElse(new Book());
         CreateOrEditBookDto dto = b.getId() == 0 ? new CreateOrEditBookDto() : new CreateOrEditBookDto(b);
         model.addAttribute("book", dto);
         model.addAttribute("authors", authorService.findAll());
@@ -69,8 +71,9 @@ public class BookController {
     }
 
     @GetMapping("/remove/{book_id}")
-    public String removeBook(@PathVariable long book_id) {
-        bookService.deleteById(book_id);
+    public String removeBook(@PathVariable(name = "book_id")  long bookId) {
+        bookService.deleteById(bookId);
         return "redirect:/";
     }
+
 }

@@ -1,19 +1,20 @@
 package ru.otus.hw.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
 
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
+@Data
 public class BookDto {
 
     private long id;
+
     private String title;
+
     private String author;
+
     private String genres;
 
     public static BookDto toDto(Book book) {
@@ -24,4 +25,5 @@ public class BookDto {
         bookDto.setGenres(book.getGenres().stream().map(Genre::getName).collect(Collectors.joining(", ")));
         return bookDto;
     }
+
 }

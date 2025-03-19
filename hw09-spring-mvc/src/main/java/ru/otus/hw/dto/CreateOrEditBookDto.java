@@ -9,10 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CreateOrEditBookDto {
+
     private long id;
+
     @NotBlank(message = "The title can't be empty")
     private String title;
+
     private long authorId;
+
     @NotEmpty(message = "Need to select at least one genre")
     private List<Long> genreIds;
 
@@ -24,7 +28,7 @@ public class CreateOrEditBookDto {
         this.title = b.getTitle();
         this.authorId = b.getAuthor().getId();
         this.genreIds = new ArrayList<>();
-        for (Genre g : b.getGenres()) {
+        for (Genre g: b.getGenres()) {
             this.genreIds.add(g.getId());
         }
     }
