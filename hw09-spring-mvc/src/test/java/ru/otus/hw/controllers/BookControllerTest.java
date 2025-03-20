@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.controller.BookController;
+import ru.otus.hw.converter.BookConverter;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -32,10 +34,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(controllers = BookController.class)
+@Import(BookConverter.class)
 class BookControllerTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private BookConverter bookConverter;
 
     @MockBean
     private BookService bookService;
@@ -68,7 +74,8 @@ class BookControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("books"))
                 .andExpect(model().attributeExists("books"))
-                .andExpect(model().attribute("books", List.of(BookDto.toDto(book), BookDto.toDto(book2))));
+                .andExpect(model().attribute("books",
+                        List.of(bookConverter.toDto(book), bookConverter.toDto(book2))));
     }
 
     @Test

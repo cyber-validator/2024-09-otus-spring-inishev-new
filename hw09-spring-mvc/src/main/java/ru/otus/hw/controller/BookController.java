@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.otus.hw.converter.BookConverter;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CreateOrEditBookDto;
 import ru.otus.hw.models.Book;
@@ -30,11 +31,13 @@ public class BookController {
 
     private final GenreService genreService;
 
+    private final BookConverter bookConverter;
+
     @GetMapping("/")
     public String getAllBooks(Model model) {
         model.addAttribute("books", bookService.findAll());
         List<BookDto> books = bookService.findAll().stream()
-                .map(BookDto::toDto)
+                .map(bookConverter::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("books", books);
         return "books";
@@ -71,7 +74,7 @@ public class BookController {
     }
 
     @GetMapping("/remove/{book_id}")
-    public String removeBook(@PathVariable(name = "book_id")  long bookId) {
+    public String removeBook(@PathVariable(name = "book_id") long bookId) {
         bookService.deleteById(bookId);
         return "redirect:/";
     }
