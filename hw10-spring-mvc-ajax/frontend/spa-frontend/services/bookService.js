@@ -1,4 +1,4 @@
-const baseUrl = 'http://localhost:8080/api/';
+const baseUrl = '/api/';
 
 export const getAllBooks = async () => await fetch(`${baseUrl}books`);
 export const getBookById = async (id) => await fetch(`${baseUrl}books/${id}`);

@@ -28,7 +28,6 @@ import java.util.Set;
 
 @RestController
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class BookLibraryManagerDemoController {
 
     private final BookService bookService;
