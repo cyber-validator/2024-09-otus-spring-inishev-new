@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<title>Book Library</title>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="format-detection" content="telephone=no">
+	    <meta name="apple-mobile-web-app-capable" content="yes">
+	    <meta name="author" content="">
+	    <meta name="keywords" content="">
+	    <meta name="description" content="">
+
+	    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+	    <link rel="stylesheet" type="text/css" href="css/vendor.css">
+	    <link rel="stylesheet" type="text/css" href="css/style.css">
+
+	</head>
+
+<body>
+
+<div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="colored">
+					<h1 class="page-title">Book Library</h1>
+				</div>
+				<a class="btn btn-rounded btn-large btn-outline-accent" th:href="@{/create-new-book}">Create new book</a>
+			</div>
+		</div>
+	</div>
+</div><!--site-banner-->
+
+<section class="padding-large">
+	<div class="container">
+		<div class="row">
+
+			<div class="products-grid grid">
+
+			  	<figure th:each="book: ${books}" class="product-style">
+					<img src="images/cover-template.jpg" alt="Books" class="product-item">
+					<figcaption>
+						<h3 th:text="${book.title}"></h3>
+						<p th:text="${book.author}"></p>
+						<p th:text="${book.getGenres()}"></p>
+
+						<div >
+							<a class="btn btn-rounded btn-large btn-outline-accent" th:href="@{/edit/{id}(id=${book.id})}">Edit</a>
+							<a class="btn btn-rounded btn-large btn-outline-dark" th:href="@{/remove/{id}(id=${book.id})}">Remove</a>
+						</div>
+					</figcaption>
+				</figure>
+
+	    	</div>
+
+		</div>
+	</div>
+</section>
+
+
+<footer id="footer">
+
+</footer>
+
+<div id="footer-bottom">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="copyright">
+					<div class="row">
+						<div class="col-md-6">
+							<p>© 2025 All rights reserved. </p>
+						</div>
+					</div>
+				</div><!--grid-->
+			</div><!--footer-bottom-content-->
+		</div>
+	</div>
+</div>
+
+</body>
+</html>	

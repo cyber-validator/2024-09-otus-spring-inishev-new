@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<title>Book Library</title>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="format-detection" content="telephone=no">
+	    <meta name="apple-mobile-web-app-capable" content="yes">
+	    <meta name="author" content="">
+	    <meta name="keywords" content="">
+	    <meta name="description" content="">
+
+	    <link rel="stylesheet" type="text/css" href="../../css/normalize.css">
+	    <link rel="stylesheet" type="text/css" href="../../css/vendor.css">
+	    <link rel="stylesheet" type="text/css" href="../../css/style.css">
+
+		<!-- script
+		================================================== -->
+		<script src="../../js/modernizr.js"></script>
+
+	</head>
+
+<body>
+
+<div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="colored">
+					<h1 class="page-title">Book Library</h1>
+				</div>
+			</div>
+		</div>
+	</div>
+</div><!--site-banner-->
+
+<section class="padding-large">
+	<div class="container">
+		<div class="row">
+
+			<div>
+
+				<h2>Add/Edit book</h2>
+				<figure class="product-style">
+
+					<form th:action="@{/save}" th:object="${book}" method="post">
+						<input type="hidden" th:field="*{id}">
+
+						<div class="mb-3">
+							<label class="form-label">Input book title:</label>
+							<div style="color:red" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+							<input class="form-control" type="text" th:field="*{title}">
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label" for="authorId">Select an author:</label>
+							<select class="form-control" id="authorId" th:field="*{authorId}">
+								<option th:each="a: ${authors}" th:selected="*{authorId} == ${a.id} ? true : false" th:value="${a.getId()}" th:text="${a.getFullName()}"></option>
+							</select>
+						</div>
+
+						<div th:with="gens=${genres}">
+							<div style="color:red" th:if="${#fields.hasErrors('genreIds')}" th:errors="*{genreIds}"></div>
+							<div class="mb-3" th:each="g: ${gens}">
+								<label th:text = "${g.getName()}"></label>
+								<input type="checkbox" th:value="${g.getId()}" th:field="*{genreIds}"/>
+							</div>
+						</div>
+
+						<div>
+								<button type="submit" class="btn btn-rounded btn-large btn-outline-accent">Save</button>
+								<a class="btn btn-rounded btn-large btn-outline-dark" th:href="@{/}">Cancel</a>
+						</div>
+					</form>
+
+				</figure>
+
+	    	</div>
+
+		</div>
+	</div>
+</section>
+
+
+<footer id="footer">
+
+</footer>
+
+<div id="footer-bottom">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+
+				<div class="copyright">
+					<div class="row">
+
+						<div class="col-md-6">
+							<p>© 2025 All rights reserved. </p>
+						</div>
+
+					</div>
+				</div><!--grid-->
+
+			</div><!--footer-bottom-content-->
+		</div>
+	</div>
+</div>
+
+</body>
+</html>	
