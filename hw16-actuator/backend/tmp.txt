@@ -1,0 +1,48 @@
+# syntax=docker/dockerfile:1
+ARG JAVA_IMAGE="bellsoft/liberica-openjdk-alpine-musl:21@sha256:8eb384b8cf534a943e716378d089cfa67579f359eeddee7266bdca248e5b2b26"
+FROM ${JAVA_IMAGE}
+
+LABEL maintainer="Otus Spring Framework course student"
+LABEL description="Book library manager demo image"
+LABEL version="0.0.1-demo"
+
+WORKDIR /app/book-lib-manager
+
+COPY /target/hw10-spring-mvc-ajax-0.0.1-SNAPSHOT.jar /book-library-manager.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/book-library-manager.jar"]
+
+
+=============================================================
+
+# syntax=docker/dockerfile:1
+ARG JAVA_IMAGE="bellsoft/liberica-openjdk-alpine-musl:21@sha256:8eb384b8cf534a943e716378d089cfa67579f359eeddee7266bdca248e5b2b26"
+FROM ${JAVA_IMAGE}
+
+LABEL maintainer="Otus Spring Framework course student"
+LABEL description="Book library manager demo image"
+LABEL version="0.0.1-demo"
+
+WORKDIR /app/book-lib-manager
+
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+
+COPY src ./src
+
+CMD ["./mvnw", "spring-boot:run"]
+
+ARG JAVA_IMAGE="bellsoft/liberica-openjdk-alpine-musl:21@sha256:8eb384b8cf534a943e716378d089cfa67579f359eeddee7266bdca248e5b2b26"
+FROM ${JAVA_IMAGE}
+COPY --from=builder /app/target/graalvm-project /app/
+
+# COPY /target/hw10-spring-mvc-ajax-0.0.1-SNAPSHOT.jar /book-library-manager.jar
+
+
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/book-library-manager.jar"]
