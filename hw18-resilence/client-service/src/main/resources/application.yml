@@ -1,0 +1,40 @@
+server:
+  port: 9090
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      registerHealthIndicator: true
+      slidingWindowSize: 6
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 10
+      eventConsumerBufferSize: 10
+  instances:
+    libService:
+      baseConfig: default
+
+
+resilience4j.retry:
+  instances:
+    libService:
+      maxAttempts: 3
+      waitDuration: 10s
+      retryExceptions:
+        - java.io.IOException
+
+resilience4j.rateLimiter:
+  instances:
+    libService:
+      timeoutDuration: 5s
+      limitForPeriod: 2
+      limit-refresh-period: 5s
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: "circuitbreakers,circuitbreakerevents,ratelimiters,ratelimiterevents,retries,retryevents,health"
