@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 @Service
-public class ExtRestService {
+public class ExtLibraryService {
 
     private static final String SERVICE_NAME = "libService";
 
