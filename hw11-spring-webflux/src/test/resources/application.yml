@@ -10,7 +10,6 @@ de:
         version: 4.0.2
 
 mongock:
-  runner-type: "ApplicationRunner"
   change-logs-scan-package: ru.otus.hw.changelog
   mongo-db:
     write-concern:
