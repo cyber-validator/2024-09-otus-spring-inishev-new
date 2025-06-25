@@ -60,7 +60,7 @@ public class LibraryController {
     @GetMapping("/api/books/{book_id}")
     public Mono<BookDto> bookById(@PathVariable(name = "book_id") String bookId) {
         return bookRepository.findById(bookId)
-                .flatMap(book -> Mono.just(bookConverter.toDto(book)))
+                .map(bookConverter::toDto)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Book not found")));
     }
 
