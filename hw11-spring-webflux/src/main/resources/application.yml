@@ -14,7 +14,6 @@ spring:
 #      embedded:
 #        version: 4.0.2
 mongock:
-  runner-type: "InitializingBean"
   change-logs-scan-package: ru.otus.hw.mongock.changelog
 #
 #  mongo-db:
