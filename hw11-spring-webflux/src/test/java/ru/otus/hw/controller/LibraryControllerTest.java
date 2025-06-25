@@ -72,10 +72,22 @@ class LibraryControllerTest {
     @Test
     @Order(4)
     void removeBook() {
+        webClient.get().uri("/api/books")
+                .exchange()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectStatus().isOk()
+                .expectBodyList(BookDto.class)
+                .hasSize(3);
         webClient.delete().uri("/api/books/2")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody().isEmpty();
+        webClient.get().uri("/api/books")
+                .exchange()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectStatus().isOk()
+                .expectBodyList(BookDto.class)
+                .hasSize(2);
     }
 
 }

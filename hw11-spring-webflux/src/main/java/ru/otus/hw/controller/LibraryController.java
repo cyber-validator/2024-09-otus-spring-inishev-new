@@ -66,9 +66,9 @@ public class LibraryController {
 
     @DeleteMapping("/api/books/{book_id}")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> removeBook(@PathVariable(name = "book_id") String bookId) {
+    public void removeBook(@PathVariable(name = "book_id") String bookId) {
         log.info("deleting book id = {}", bookId);
-        return bookRepository.deleteById(bookId);
+        bookRepository.deleteById(bookId).subscribe();
     }
 
 }
