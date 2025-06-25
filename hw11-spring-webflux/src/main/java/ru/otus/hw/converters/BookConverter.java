@@ -3,7 +3,6 @@ package ru.otus.hw.converters;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.dto.CreateOrEditBookDto;
 import ru.otus.hw.models.Book;
 
 import java.util.stream.Collectors;
@@ -23,10 +22,6 @@ public class BookConverter {
         bookDto.setAuthor(authorConverter.toDto(book.getAuthor()));
         bookDto.setGenres(book.getGenres().stream().map(genreConverter::toDto).collect(Collectors.toList()));
         return bookDto;
-    }
-
-    public Book toEntity(CreateOrEditBookDto dto) {
-        throw new UnsupportedOperationException("");
     }
 
 }

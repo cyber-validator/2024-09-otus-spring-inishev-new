@@ -5,11 +5,9 @@ import com.github.cloudyrock.mongock.ChangeSet;
 import com.mongodb.client.MongoDatabase;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
-import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
 import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
-import ru.otus.hw.repositories.CommentRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.HashMap;
@@ -56,14 +54,6 @@ public class InitDataBaseChangeLog {
                 List.of(genres.get(3), genres.get(4)))).block());
         books.put(3, bookRepository.save(new Book("3", "BookTitle_3", authors.get(3),
                 List.of(genres.get(5), genres.get(6)))).block());
-    }
-
-    @ChangeSet(order = "005", id = "insertComments", author = "Otus student")
-    public void insertComments(CommentRepository commentRepository) {
-        commentRepository.save(new Comment("1", "Book_1-Comment_1", books.get(1)));
-        commentRepository.save(new Comment("2", "Book_1-Comment_2", books.get(1)));
-        commentRepository.save(new Comment("3", "Book_2-Comment_1", books.get(2)));
-        commentRepository.save(new Comment("4", "Book_3-Comment_1", books.get(3)));
     }
 
 }
