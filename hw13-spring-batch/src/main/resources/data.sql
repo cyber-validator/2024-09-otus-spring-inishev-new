@@ -6,13 +6,25 @@ values ('Genre_1'), ('Genre_2'), ('Genre_3'),
        ('Genre_4'), ('Genre_5'), ('Genre_6');
 
 insert into books(title, author_id)
-values ('BookTitle_1', 1), ('BookTitle_2', 2), ('BookTitle_3', 3);
+values ('BookTitle_1', 1), ('BookTitle_2', 2), ('BookTitle_3', 3),
+ ('BookTitle_4', 3), ('BookTitle_5', 3), ('BookTitle_6', 3),
+ ('BookTitle_7', 3), ('BookTitle_8', 3), ('BookTitle_9', 3);
 
 insert into books_genres(book_id, genre_id)
 values (1, 1),   (1, 2),
        (2, 3),   (2, 4),
-       (3, 5),   (3, 6);
+       (3, 5),   (3, 6),
+       (4, 3),   (4, 4),
+       (5, 3),   (5, 4),
+       (6, 5),   (6, 6),
+       (7, 5),   (7, 6),
+       (8, 5),   (8, 6),
+       (9, 5),   (9, 6);
 
 insert into comments(message, book_id)
 values ('Comment-1_book-1', 1), ('Comment-2_book-1', 1),
-       ('Comment-1_book-2', 2), ('Comment-1_book-3', 3);
+       ('Comment-1_book-2', 2), ('Comment-1_book-3', 3),
+       ('Comment-1_book-4', 4), ('Comment-2_book-3', 3),
+       ('Comment-1_book-5', 5), ('Comment-3_book-3', 3),
+       ('Comment-1_book-6', 6), ('Comment-1_book-8', 8),
+       ('Comment-1_book-7', 7), ('Comment-2_book-8', 8);

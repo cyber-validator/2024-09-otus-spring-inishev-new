@@ -11,6 +11,7 @@ import org.springframework.batch.item.data.builder.MongoItemWriterBuilder;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -21,6 +22,10 @@ import ru.otus.hw.entity.mongo.MongoComment;
 @Component
 public class CommentStepConfig {
 
+    public static final int CHUNK_SIZE = 50;
+
+    public static final String COMMENTS = "comments";
+
     @Bean
     public Step commentStep(JobRepository jobRepository,
                             PlatformTransactionManager transactionManager,
@@ -28,10 +33,11 @@ public class CommentStepConfig {
                             @Qualifier("commentItemProcessor") ItemProcessor<JpaComment, MongoComment> itemProcessor,
                             @Qualifier("commentItemWriter") ItemWriter<MongoComment> itemWriter) {
         return new StepBuilder("commentStep", jobRepository)
-                .<JpaComment, MongoComment>chunk(10, transactionManager)
+                .<JpaComment, MongoComment>chunk(CHUNK_SIZE, transactionManager)
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)
+                .taskExecutor(new SimpleAsyncTaskExecutor())
                 .build();
     }
 
@@ -41,7 +47,7 @@ public class CommentStepConfig {
                 .name("comments")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString("SELECT c FROM JpaComment c")
-                .pageSize(10)
+                .pageSize(CHUNK_SIZE)
                 .build();
     }
 
@@ -54,7 +60,7 @@ public class CommentStepConfig {
     public ItemWriter<MongoComment> itemWriter(MongoOperations mongoOperations) {
         return new MongoItemWriterBuilder<MongoComment>()
                 .template(mongoOperations)
-                .collection("comments")
+                .collection(COMMENTS)
                 .build();
     }
 

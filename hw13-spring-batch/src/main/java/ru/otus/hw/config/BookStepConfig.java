@@ -11,6 +11,7 @@ import org.springframework.batch.item.data.builder.MongoItemWriterBuilder;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -21,6 +22,10 @@ import ru.otus.hw.entity.mongo.MongoBook;
 @Component
 public class BookStepConfig {
 
+    public static final int CHUNK_SIZE = 100;
+
+    public static final String BOOKS = "books";
+
     @Bean
     public Step bookStep(JobRepository jobRepository,
                          PlatformTransactionManager transactionManager,
@@ -28,10 +33,11 @@ public class BookStepConfig {
                          @Qualifier("bookItemProcessor") ItemProcessor<JpaBook, MongoBook> itemProcessor,
                          @Qualifier("bookItemWriter") ItemWriter<MongoBook> itemWriter) {
         return new StepBuilder("bookStep", jobRepository)
-                .<JpaBook, MongoBook>chunk(10, transactionManager)
+                .<JpaBook, MongoBook>chunk(CHUNK_SIZE, transactionManager)
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)
+                .taskExecutor(new SimpleAsyncTaskExecutor())
                 .build();
     }
 
@@ -40,8 +46,8 @@ public class BookStepConfig {
         return new JpaPagingItemReaderBuilder<JpaBook>()
                 .name("books")
                 .entityManagerFactory(entityManagerFactory)
-                .queryString("SELECT b FROM JpaBook b LEFT JOIN FETCH b.genres")
-                .pageSize(10)
+                .queryString("SELECT b FROM JpaBook b LEFT JOIN FETCH b.author LEFT JOIN FETCH b.genres")
+                .pageSize(CHUNK_SIZE)
                 .build();
     }
 
@@ -54,7 +60,7 @@ public class BookStepConfig {
     public ItemWriter<MongoBook> itemWriter(MongoOperations mongoOperations) {
         return new MongoItemWriterBuilder<MongoBook>()
                 .template(mongoOperations)
-                .collection("books")
+                .collection(BOOKS)
                 .build();
     }
 
