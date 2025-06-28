@@ -1,4 +1,4 @@
-package ru.otus.hw;
+package ru.otus.hw.listener;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.BatchStatus;
