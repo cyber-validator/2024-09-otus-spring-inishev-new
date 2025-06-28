@@ -1,4 +1,4 @@
-package ru.otus.hw.entity.sql;
+package ru.otus.hw.entity.jpa;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,8 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,10 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@NamedEntityGraph(name = "book-author-genres",
-        attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genres")})
 @Table(name = "books")
-public class SqlBook {
+public class JpaBook {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +37,7 @@ public class SqlBook {
     @JoinColumn(name = "author_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private SqlAuthor author;
+    private JpaAuthor author;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "books_genres",
@@ -49,6 +45,6 @@ public class SqlBook {
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private List<SqlGenre> genres;
+    private List<JpaGenre> genres;
 
 }

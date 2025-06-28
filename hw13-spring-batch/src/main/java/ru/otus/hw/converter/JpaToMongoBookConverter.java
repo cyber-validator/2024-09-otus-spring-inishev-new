@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.otus.hw.entity.mongo.MongoAuthor;
 import ru.otus.hw.entity.mongo.MongoBook;
 import ru.otus.hw.entity.mongo.MongoGenre;
-import ru.otus.hw.entity.sql.SqlBook;
-import ru.otus.hw.entity.sql.SqlGenre;
+import ru.otus.hw.entity.jpa.JpaBook;
+import ru.otus.hw.entity.jpa.JpaGenre;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +13,13 @@ import java.util.List;
 @Component
 public class JpaToMongoBookConverter {
 
-    public MongoBook convert(SqlBook book) {
+    public MongoBook convert(JpaBook book) {
         MongoAuthor mongoAuthor = getMongoAuthor(book);
         List<MongoGenre> mongoGenres = getMongoGenres(book);
         return getMongoBook(book, mongoAuthor, mongoGenres);
     }
 
-    private MongoBook getMongoBook(SqlBook book, MongoAuthor mongoAuthor, List<MongoGenre> mongoGenres) {
+    private MongoBook getMongoBook(JpaBook book, MongoAuthor mongoAuthor, List<MongoGenre> mongoGenres) {
         MongoBook mongoBook = new MongoBook();
         mongoBook.setId(stringOf(book.getId()));
         mongoBook.setTitle(book.getTitle());
@@ -28,9 +28,9 @@ public class JpaToMongoBookConverter {
         return mongoBook;
     }
 
-    private List<MongoGenre> getMongoGenres(SqlBook book) {
+    private List<MongoGenre> getMongoGenres(JpaBook book) {
         List<MongoGenre> mongoGenres = new ArrayList<>();
-        for (SqlGenre genre: book.getGenres()) {
+        for (JpaGenre genre: book.getGenres()) {
             MongoGenre mongoGenre = new MongoGenre();
             mongoGenre.setId(stringOf(genre.getId()));
             mongoGenre.setName(genre.getName());
@@ -39,7 +39,7 @@ public class JpaToMongoBookConverter {
         return mongoGenres;
     }
 
-    private MongoAuthor getMongoAuthor(SqlBook book) {
+    private MongoAuthor getMongoAuthor(JpaBook book) {
         MongoAuthor mongoAuthor = new MongoAuthor();
         mongoAuthor.setId(stringOf(book.getAuthor().getId()));
         mongoAuthor.setFullName(book.getAuthor().getFullName());

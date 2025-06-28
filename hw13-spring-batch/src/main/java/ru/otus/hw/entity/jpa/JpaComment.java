@@ -1,4 +1,4 @@
-package ru.otus.hw.entity.sql;
+package ru.otus.hw.entity.jpa;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +20,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table(name = "comments")
-public class SqlComment {
+public class JpaComment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +33,6 @@ public class SqlComment {
     @JoinColumn(name = "book_id", nullable = false)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private SqlBook book;
+    private JpaBook book;
 
 }
