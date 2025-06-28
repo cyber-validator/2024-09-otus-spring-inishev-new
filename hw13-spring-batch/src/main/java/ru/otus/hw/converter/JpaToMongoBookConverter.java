@@ -1,17 +1,17 @@
 package ru.otus.hw.converter;
 
 import org.springframework.stereotype.Component;
+import ru.otus.hw.entity.jpa.JpaBook;
+import ru.otus.hw.entity.jpa.JpaGenre;
 import ru.otus.hw.entity.mongo.MongoAuthor;
 import ru.otus.hw.entity.mongo.MongoBook;
 import ru.otus.hw.entity.mongo.MongoGenre;
-import ru.otus.hw.entity.jpa.JpaBook;
-import ru.otus.hw.entity.jpa.JpaGenre;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class JpaToMongoBookConverter {
+public class JpaToMongoBookConverter extends ValueToStringConverter {
 
     public MongoBook convert(JpaBook book) {
         MongoAuthor mongoAuthor = getMongoAuthor(book);
@@ -44,10 +44,6 @@ public class JpaToMongoBookConverter {
         mongoAuthor.setId(stringOf(book.getAuthor().getId()));
         mongoAuthor.setFullName(book.getAuthor().getFullName());
         return mongoAuthor;
-    }
-
-    private String stringOf(Object value) {
-        return String.valueOf(value);
     }
 
 }
