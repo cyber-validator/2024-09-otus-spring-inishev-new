@@ -18,10 +18,10 @@ public class Runner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        for (long i = 0; ; i++) {
+        for (long i = 1; ; i++) {
             sleep(2_000);
             var res = gateway.produceVehicle(vinGenerator.getVin());
-            log.info("Received data #{}: {}", i, res);
+            log.info("Received data # {}: {}", i, res);
         }
     }
 
