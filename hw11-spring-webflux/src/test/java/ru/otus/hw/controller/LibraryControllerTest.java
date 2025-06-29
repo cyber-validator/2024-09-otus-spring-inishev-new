@@ -1,12 +1,10 @@
 package ru.otus.hw.controller;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CreateOrEditBookDto;
@@ -16,14 +14,13 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class LibraryControllerTest {
 
     @Autowired
     private WebTestClient webClient;
 
     @Test
-    @Order(1)
     void allBooks() {
         webClient.get().uri("/api/books")
                 .exchange()
@@ -34,7 +31,6 @@ class LibraryControllerTest {
     }
 
     @Test
-    @Order(2)
     void saveBook() {
         String authorId = "2";
         String title = "new-title";
@@ -54,7 +50,6 @@ class LibraryControllerTest {
     }
 
     @Test
-    @Order(3)
     void bookById() {
         webClient.get().uri("/api/books/2")
                 .exchange()
@@ -70,7 +65,6 @@ class LibraryControllerTest {
     }
 
     @Test
-    @Order(4)
     void removeBook() {
         webClient.get().uri("/api/books")
                 .exchange()
