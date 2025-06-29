@@ -7,18 +7,20 @@ import lombok.Setter;
 @Setter
 public class Vehicle {
 
-    private String vin;
-
     private Body body;
 
     private Engine engine;
 
     private Equipment equipment;
 
+    public Vehicle(Body body) {
+        this.body = body;
+    }
+
     @Override
     public String toString() {
         return "Vehicle [" +
-                "VIN=" + vin +
+                "VIN=" + body.getVin() +
                 ", body=" + body.getBodyType() +
                 ", engine=" + engine.getEngineType() +
                 ", equipment=" + equipment.getEquipmentType() +
