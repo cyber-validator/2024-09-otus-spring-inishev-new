@@ -1,0 +1,307 @@
+# /etc/salt/master (add these lines)
+
+# Use the custom returner as the master job cache
+master_job_cache: pgjsonb_pool
+
+# Connection details for PostgreSQL (using a single URL)
+pgjsonb_pool.url: postgresql://saltuser:saltpass@localhost:5432/saltdb?sslmode=require
+
+# Optional: pool size (default is 5)
+pgjsonb_pool.pool_size: 10
+
+# Optional: additional keyword arguments for psycopg2 (rarely needed)
+# pgjsonb_pool.connect_kwargs:
+#   application_name: salt_master
+#   keepalives_idle: 300
+
+
+
+
+# -*- coding: utf-8 -*-
+"""
+PostgreSQL JSONB returner with connection pooling.
+
+This returner is designed for the Salt master job cache. It maintains a
+persistent pool of PostgreSQL connections, reusing them for all database
+operations. This eliminates the overhead of opening/closing a connection
+for every job return or event.
+
+Configuration example in master config:
+
+.. code-block:: yaml
+
+    master_job_cache: pgjsonb_pool
+
+    pgjsonb_pool.url: postgresql://user:pass@host:port/database?sslmode=require
+    pgjsonb_pool.pool_size: 10   # optional, default 5
+
+The connection URL follows libpq URI format. All parameters (including sslmode,
+keepalives, etc.) are supported.
+
+Requirements:
+    - psycopg2 >= 2.7 (for parse_dsn support)
+"""
+
+import logging
+from contextlib import contextmanager
+
+import psycopg2
+import psycopg2.pool
+import psycopg2.extras
+import salt.utils.json
+import salt.utils.jid
+
+log = logging.getLogger(__name__)
+
+# Define the module's virtual name
+__virtualname__ = "pgjsonb_pool"
+
+# Global connection pool (one per master process)
+__pool = None
+
+
+def __virtual__():
+    """
+    Only load if psycopg2 is available.
+    """
+    if not psycopg2:
+        return False, "Could not import psycopg2.  PostgreSQL returner disabled."
+    return __virtualname__
+
+
+def _get_options():
+    """
+    Return the PostgreSQL connection options and pool size from the config.
+    """
+    opts = {}
+    # The database URL (required)
+    opts["url"] = __salt__["config.option"]("pgjsonb_pool.url")
+    if not opts["url"]:
+        raise ValueError("Missing 'pgjsonb_pool.url' in master configuration")
+
+    # Pool size (optional, default 5)
+    opts["pool_size"] = __salt__["config.option"](
+        "pgjsonb_pool.pool_size", default=5
+    )
+
+    # Optional additional keyword arguments (rarely needed)
+    opts["connect_kwargs"] = __salt__["config.option"](
+        "pgjsonb_pool.connect_kwargs", default={}
+    )
+
+    return opts
+
+
+def _get_pool():
+    """
+    Return the connection pool, creating it if it doesn't exist.
+    """
+    global __pool
+    if __pool is None:
+        opts = _get_options()
+        try:
+            # Parse the URL into individual connection parameters
+            conn_params = psycopg2.extras.parse_dsn(opts["url"])
+            # Merge any extra keyword arguments
+            conn_params.update(opts["connect_kwargs"])
+
+            __pool = psycopg2.pool.ThreadedConnectionPool(
+                minconn=1,
+                maxconn=opts["pool_size"],
+                **conn_params
+            )
+            log.debug(
+                "Created PostgreSQL connection pool (max %s) from URL",
+                opts["pool_size"]
+            )
+        except (psycopg2.Error, psycopg2.pool.PoolError, ValueError) as err:
+            log.error("Failed to create connection pool: %s", err)
+            raise
+    return __pool
+
+
+@contextmanager
+def _get_conn():
+    """
+    Context manager to obtain a connection from the pool.
+    The connection is automatically returned to the pool when the block exits.
+    """
+    pool = _get_pool()
+    conn = None
+    try:
+        conn = pool.getconn()
+        yield conn
+    except psycopg2.Error as err:
+        log.error("Database error: %s", err)
+        raise
+    finally:
+        if conn is not None:
+            pool.putconn(conn)
+
+
+def _prepare_sql(obj):
+    """
+    Prepare a Python object for SQL insertion by converting to JSON.
+    """
+    return salt.utils.json.dumps(obj)
+
+
+def returner(ret):
+    """
+    Insert a minion return into the salt_returns table.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        sql = """INSERT INTO salt_returns
+                 (fun, jid, return, id, success, full_ret, alter_time)
+                 VALUES (%s, %s, %s, %s, %s, %s, NOW())"""
+        cur.execute(
+            sql,
+            (
+                ret["fun"],
+                ret["jid"],
+                _prepare_sql(ret["return"]),
+                ret["id"],
+                ret.get("success", False),
+                _prepare_sql(ret),
+            ),
+        )
+        conn.commit()
+        cur.close()
+
+
+def save_load(jid, load, minions=None):
+    """
+    Save the load to the jids table.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        sql = """INSERT INTO jids
+                 (jid, load, started, timestamp)
+                 VALUES (%s, %s, NOW(), NOW())"""
+        try:
+            cur.execute(sql, (jid, _prepare_sql(load)))
+        except psycopg2.IntegrityError:
+            # jid already exists – this is normal for retries
+            conn.rollback()
+        else:
+            conn.commit()
+        finally:
+            cur.close()
+
+
+def get_load(jid):
+    """
+    Retrieve the load from the jids table for a given job id.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        sql = """SELECT load FROM jids WHERE jid = %s"""
+        cur.execute(sql, (jid,))
+        result = cur.fetchone()
+        cur.close()
+        if result and result[0] is not None:
+            return salt.utils.json.loads(result[0])
+        return {}
+
+
+def get_jid(jid):
+    """
+    Return a dictionary mapping minion id -> return data for a given job id.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        sql = """SELECT id, full_ret FROM salt_returns WHERE jid = %s"""
+        cur.execute(sql, (jid,))
+        results = cur.fetchall()
+        ret = {}
+        for row in results:
+            ret[row["id"]] = salt.utils.json.loads(row["full_ret"])
+        cur.close()
+        return ret
+
+
+def get_jids():
+    """
+    Return a list of all job ids and their loads.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        sql = """SELECT jid, load FROM jids ORDER BY jid DESC"""
+        cur.execute(sql)
+        results = cur.fetchall()
+        ret = {}
+        for row in results:
+            ret[row["jid"]] = salt.utils.json.loads(row["load"])
+        cur.close()
+        return ret
+
+
+def get_jids_filter(count, filter_find_job=True):
+    """
+    Return a list of all jobs with a lower count than the passed count.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        sql = """SELECT jid, load FROM jids WHERE jid > %s ORDER BY jid DESC"""
+        cur.execute(sql, (count,))
+        results = cur.fetchall()
+        ret = {}
+        for row in results:
+            ret[row["jid"]] = salt.utils.json.loads(row["load"])
+        cur.close()
+        return ret
+
+
+def get_minions():
+    """
+    Return a list of all minions that have ever returned.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        sql = """SELECT DISTINCT id FROM salt_returns"""
+        cur.execute(sql)
+        ret = [row[0] for row in cur.fetchall()]
+        cur.close()
+        return ret
+
+
+def prep_jid(nocache=False, passed_jid=None):
+    """
+    Do any work necessary to prepare a JID, including sending a custom id.
+    """
+    return passed_jid if passed_jid is not None else salt.utils.jid.gen_jid()
+
+
+def event_return(events):
+    """
+    Insert a list of events into the salt_events table.
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        for event in events:
+            sql = """INSERT INTO salt_events
+                     (tag, data, alter_time, master_id)
+                     VALUES (%s, %s, NOW(), %s)"""
+            cur.execute(
+                sql,
+                (
+                    event["tag"],
+                    _prepare_sql(event["data"]),
+                    event.get("master_id", None),
+                ),
+            )
+        conn.commit()
+        cur.close()
+
+
+def _purge_job(jid):
+    """
+    Purge a job from the database (used by the master when cleaning up old jobs).
+    """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        sql = "DELETE FROM jids WHERE jid = %s"
+        cur.execute(sql, (jid,))
+        conn.commit()
+        cur.close()
